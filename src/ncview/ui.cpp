@@ -30,7 +30,8 @@ void draughts::ncview::ui::play_game(void)
 {
     try
     {
-        player_selection_window newwin(themodel->get_player_list());
+    	std::cout<<themodel->get_instance()->get_player_list().size()<<std::endl;
+        player_selection_window newwin(themodel->get_instance()->get_player_list());
         newwin.activate();
     }
     catch(std::exception& ex)

@@ -6,6 +6,7 @@
 #include <map>
 #include <thread>
 #include <chrono>
+#include <iomanip>
 
 #pragma once
 
@@ -16,9 +17,11 @@ namespace draughts
         class model
         {
             static std::unique_ptr<model> instance;
+            std::map<int, std::string> playerList;
 
             model(void);
             bool player_exists(const std::string&);
+
 
             public:
             void start_game(int, int);
