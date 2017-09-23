@@ -1,6 +1,7 @@
 #include "ui.h"
 #include "../nc_controller/controller.h"
 #include "../model/model.h"
+//Singleton instance initialized as nullptr
 std::unique_ptr<draughts::ncview::ui> draughts::ncview::ui::instance = 
     nullptr;
 
@@ -12,7 +13,10 @@ draughts::ncview::ui::ui(void)
 
 void draughts::ncview::ui::main_menu(void)
 {
+	/*Declare main_menu object the constructor will call menu constructor which will
+		assign the menu commands to the menu*/
     draughts::ncview::main_menu menu;
+    //Open the main menu
     menu.activate();
 }
 
@@ -35,6 +39,7 @@ void draughts::ncview::ui::play_game(void)
     }
 }
 
+//Singleton design pattern, if it exists return it or else make a new instance
 draughts::ncview::ui * draughts::ncview::ui::get_instance(void)
 {
     if(instance == nullptr)
