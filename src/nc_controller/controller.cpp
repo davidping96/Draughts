@@ -61,8 +61,8 @@ void draughts::nc_controller::controller::start_game(
 	//Define theplayers as the pair of player1 and player2
 	theplayers = std::make_pair(player1, player2);
 	//With the two players defined start the game (sides, board setup)
-	get_model()->start_game(ids[0], ids[1]);
-	get_view()->show_game_window(theplayers);
+	get_model()->get_instance()->start_game(ids[0], ids[1]);
+	get_view()->get_instance()->show_game_window(theplayers);
 }
 
 draughts::nc_controller::controller::~controller(void) {

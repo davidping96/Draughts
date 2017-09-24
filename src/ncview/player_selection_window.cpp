@@ -43,16 +43,6 @@ void draughts::ncview::player_selection_window::activate(void) {
 		 << players_to_string() << std::endl;
 		 }*/
 	}
-	//Start the game, the selected_list contains the names of the two players
-	std::cout << "----------------------------------------" << std::endl;
-	std::cout << "Starting the game with the players" << std::endl;
-	std::cout << "----------------------------------------" << std::endl;
-	for (std::map<int, std::string>::iterator it = selected_list.begin();
-			it != selected_list.end(); ++it) {
-		std::cout << std::setw(0) << "ID: " << it->first << std::setw(10)
-				<< "Name: " << it->second << std::endl;
-	}
-	std::cout << "----------------------------------------" << std::endl;
 	//Start the game with the two players selected
 	thecontroller->start_game(selected_list);
 }

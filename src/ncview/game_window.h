@@ -3,6 +3,8 @@
 #include <string>
 #include <utility>
 #include <boost/algorithm/string.hpp>
+#include <regex>
+#include <boost/tokenizer.hpp>
 
 namespace draughts
 {

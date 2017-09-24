@@ -20,7 +20,6 @@ namespace draughts
             //Vector of menu commands
             command_vector menu_commands;
             public:
-            	//menu constructor passes string references for memory efficiency
                 menu(const std::string&, const std::vector<std::string>&, 
                     command_vector);
                 menu(void);
