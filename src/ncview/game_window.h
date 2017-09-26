@@ -4,7 +4,6 @@
 #include <utility>
 #include <boost/algorithm/string.hpp>
 #include <regex>
-#include <boost/tokenizer.hpp>
 
 namespace draughts
 {
@@ -20,8 +19,8 @@ namespace draughts
             void print_top_row(void);
             void print_line(int);
             void print_row(int);
-            std::pair<std::pair<int,int>, std::pair<int,int>>
-                get_move_input(void);
+            std::pair<std::pair<int,int>, std::pair<int,int>> get_move_input(void);
+            std::pair<int, int> get_more_jumps(void);
                 std::pair<int,int> strtocoord(const std::string&);
             
             public:

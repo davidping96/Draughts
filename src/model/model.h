@@ -6,6 +6,9 @@
 #include <map>
 #include <thread>
 #include <chrono>
+#include <regex>
+#include <locale>
+#include <boost/algorithm/string.hpp>
 //Used for formatting outputs
 #include <iomanip>
 //Used to get random numbers
@@ -43,6 +46,9 @@ namespace draughts
 
             bool possibleJumps(void);
             bool possibleMoves(void);
+            bool validJump(int, int, int, int, int);
+            bool moreJumps(int, int, int);
+            bool validMove(int, int, int, int, int);
 
             void add_player(const std::string& );
             int get_player_score(int);
@@ -56,6 +62,7 @@ namespace draughts
             int get_winner();
             int get_width();
             int get_height();
+
             static model * get_instance(void);
             static void delete_instance(void);
             virtual ~model(void);
