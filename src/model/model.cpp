@@ -22,12 +22,14 @@ void draughts::model::model::start_game(int plr1, int plr2) {
 	player1 = std::make_pair(plr1, 'x');
 	player2 = std::make_pair(plr2, 'o');
 
-	//Random number generator
-	std::default_random_engine generator;
-	//Random number 0 to 1 inclusive
-	std::uniform_int_distribution<int> distribution(0, 1);
-	//Acquire random number
-	int rand = distribution(generator);
+	auto duration = std::chrono::system_clock::now().time_since_epoch();
+	//seed with number of milliseconds since the unix epoch began
+	long millis = std::chrono::duration_cast<std::chrono::milliseconds>(
+			duration).count();
+	std::mt19937 gen(millis);
+	//set the range for the generator - in this case between 0 and 5 inclusive
+	std::uniform_int_distribution<unsigned> dist(0, 1);
+	int rand = dist(gen);
 
 	if (rand == 0) {
 		currentPlayer = player1.first;
@@ -121,11 +123,11 @@ void draughts::model::model::make_move(int playernum, int startx, int starty,
 
 	//If the piece ends up in the kingsrow promote it to a king
 	if (playernum == player1.first) {
-		if (endx == 0) {
+		if (endx == get_height() - 1) {
 			board.at(endx).at(endy) = std::toupper(get_player_token(playernum));
 		}
 	} else if (playernum == player2.first) {
-		if (endx == get_height() - 1) {
+		if (endx == 0) {
 			board.at(endx).at(endy) = std::toupper(get_player_token(playernum));
 		}
 	}
