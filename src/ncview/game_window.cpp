@@ -6,15 +6,15 @@ draughts::ncview::game_window::game_window(const player_pair & theplayers) :
 }
 
 void draughts::ncview::game_window::activate(void) {
-	std::unique_ptr<draughts::model::model> model_instance(themodel->get_instance());
+	std::unique_ptr<draughts::model::Game> game_instance(themodel->get_instance()->getGameInstance());
 	while (!quit) {
 		int playernum = EOF;
 		try {
 			display_board();
-			playernum = model_instance->get_current_player();
-			std::cout << model_instance->get_player_name(playernum) << "'s turn " <<std::endl;
-			std::cout<<"Token: (" << model_instance->get_player_token(playernum) << ")"<< std::endl;
-			std::cout << "Score: "<< model_instance->get_player_score(playernum) << std::endl;
+			playernum = game_instance->getCurrentPlayer();
+			std::cout << game_instance->getPlayerName(playernum)<< "'s turn " <<std::endl;
+			std::cout<<"Token: (" << game_instance->getPlayerToken(playernum) << ")"<< std::endl;
+			std::cout << "Score: "<< game_instance->getPlayerScore(playernum) << std::endl;
 		} catch (std::exception & ex) {
 			std::cerr << ex.what() << std::endl;
 			return;
@@ -30,9 +30,9 @@ void draughts::ncview::game_window::activate(void) {
 				move_coords = get_move_input();
 
 				//Check if jumps are possible
-				if (model_instance->possibleJumps()) {
+				if (game_instance->possibleJumps()) {
 					//If true then ensure move input is a valid jump
-					if (model_instance->validJump(playernum,
+					if (game_instance->validJump(playernum,
 							move_coords.first.first - 1,
 							move_coords.first.second - 1,
 							move_coords.second.first - 1,
@@ -42,12 +42,12 @@ void draughts::ncview::game_window::activate(void) {
 						//If a piece will be kinged upon jumping then do not try to make more jumps
 						//If the start position is a normal piece
 						//and the end position is the kingsrow
-						if(model_instance->get_token(move_coords.first.first, move_coords.first.second)==model_instance->get_player_token(playernum)){
-							if(model_instance->get_token(move_coords.first.first, move_coords.first.second)=='x' &&
+						if(game_instance->getBoard()->getToken(move_coords.first.first, move_coords.first.second)==game_instance->getPlayerToken(playernum)){
+							if(game_instance->getBoard()->getToken(move_coords.first.first, move_coords.first.second)=='x' &&
 									move_coords.first.first==0){
 								kinged = true;
-							}else if(model_instance->get_token(move_coords.first.first, move_coords.first.second)=='x' &&
-									move_coords.first.first==model_instance->get_height()){
+							}else if(game_instance->getBoard()->getToken(move_coords.first.first, move_coords.first.second)=='o' &&
+									move_coords.first.first==game_instance->getBoard()->getHeight()-1){
 								kinged = true;
 							}
 						}
@@ -57,9 +57,9 @@ void draughts::ncview::game_window::activate(void) {
 					}
 				} else {
 					//Else if you cannot make a jump check if moves are possible
-					if (model_instance->possibleMoves()) {
+					if (game_instance->possibleMoves()) {
 						//If true then ensure move input is a valid move
-						if (model_instance->validMove(playernum,
+						if (game_instance->validMove(playernum,
 								move_coords.first.first - 1,
 								move_coords.first.second - 1,
 								move_coords.second.first - 1,
@@ -78,7 +78,7 @@ void draughts::ncview::game_window::activate(void) {
 				}
 			} while (!valid_move && !valid_jump);
 
-			model_instance->make_move(playernum, move_coords.first.first - 1,
+			game_instance->make_move(playernum, move_coords.first.first - 1,
 					move_coords.first.second - 1, move_coords.second.first - 1,
 					move_coords.second.second - 1);
 
@@ -88,17 +88,17 @@ void draughts::ncview::game_window::activate(void) {
 				int endx = move_coords.second.first-1;
 				int endy = move_coords.second.second-1;
 				//Make more jumps as long as it can
-				while (model_instance->moreJumps(playernum, endx, endy)) {
+				while (game_instance->moreJumps(playernum, endx, endy)) {
 					std::cout<<"More jumps must be made"<<std::endl;
 					display_board();
 					std::pair<int, int> jump_coords;
 					//Get more user input
 					jump_coords = get_more_jumps();
 					//If it is valid input
-					if (model_instance->validJump(playernum, endx, endy,
+					if (game_instance->validJump(playernum, endx, endy,
 							jump_coords.first-1, jump_coords.second-1)) {
 						//Make the jump
-						model_instance->make_move(playernum, endx, endy,
+						game_instance->make_move(playernum, endx, endy,
 								jump_coords.first-1, jump_coords.second-1);
 						endx = jump_coords.first-1;
 						endy = jump_coords.second-1;
@@ -108,7 +108,7 @@ void draughts::ncview::game_window::activate(void) {
 					}
 				}
 			}
-			model_instance->swap_players();
+			game_instance->swapPlayers();
 
 		} catch (std::exception& ex) {
 			std::cerr << ex.what() << std::endl;
@@ -166,7 +166,7 @@ std::pair<int, int> draughts::ncview::game_window::get_more_jumps(void) {
 void draughts::ncview::game_window::print_top_row(void) {
 	int xcount;
 	std::cout << "   |";
-	for (xcount = 0; xcount < themodel->get_instance()->get_width(); ++xcount) {
+	for (xcount = 0; xcount < themodel->get_instance()->getGameInstance()->getBoard()->getWidth(); ++xcount) {
 		std::cout << " " << xcount + 1 << " |";
 	}
 	std::cout << std::endl;
@@ -185,9 +185,9 @@ std::pair<int, int> draughts::ncview::game_window::strtocoord(
 void draughts::ncview::game_window::print_row(int rownum) {
 	int xcount;
 	std::cout << " " << rownum + 1 << " |";
-	for (xcount = 0; xcount < themodel->get_instance()->get_width(); ++xcount) {
+	for (xcount = 0; xcount < themodel->get_instance()->getGameInstance()->getBoard()->getWidth(); ++xcount) {
 		std::cout << " "
-				<< themodel->get_instance()->get_token(rownum + 1, xcount + 1)
+				<< themodel->get_instance()->getGameInstance()->getBoard()->getToken(rownum + 1, xcount + 1)
 				<< " |";
 	}
 	std::cout << std::endl;
@@ -205,13 +205,13 @@ void draughts::ncview::game_window::display_board(void) {
 
 	std::cout << std::endl;
 	print_top_row();
-	print_line(themodel->get_instance()->get_width() * 4 + 4);
+	print_line(themodel->get_instance()->getGameInstance()->getBoard()->getWidth() * 4 + 4);
 	std::cout << std::endl;
 
-	for (ycount = 0; ycount < themodel->get_instance()->get_height();
+	for (ycount = 0; ycount < themodel->get_instance()->getGameInstance()->getBoard()->getHeight();
 			ycount++) {
 		print_row(ycount);
-		print_line(themodel->get_instance()->get_width() * 4 + 4);
+		print_line(themodel->get_instance()->getGameInstance()->getBoard()->getWidth() * 4 + 4);
 		std::cout << std::endl;
 	}
 }
