@@ -5,6 +5,8 @@
  */
 
 #include <vector>
+#include <memory>
+#include "Piece.h"
 
 #ifndef MODEL_BOARD_H_
 #define MODEL_BOARD_H_
@@ -13,19 +15,24 @@ namespace draughts {
 namespace model {
 
 class Board {
-	std::vector<std::vector<char>> cells;
-	int width = 8;
-	int height = 8;
+	Board();
+	static std::unique_ptr<Board> instance;
+	std::vector<std::vector<std::unique_ptr<Piece>>> cells;
+	const int boardLength = 8;
 
 public:
-	Board();
 	virtual ~Board();
-	int getHeight();
-	int getWidth();
-	char getToken(int x, int y);
-	void setToken(int x, int y, char c);
-	std::vector<std::vector<char>> getCells();
+
+	Board * getInstance();
+	void deleteInstance();
+
+	std::vector<std::vector<std::unique_ptr<Piece>>> & getCells();
+	Piece * getPiece(int x, int y);
+	int getBoardLength();
+	void setPiece(int x, int y, std::unique_ptr<Piece>);
+	bool pieceKinged(int, int, int);
 	void initBoard();
+
 };
 
 } /* namespace model */

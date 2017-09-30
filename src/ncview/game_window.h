@@ -2,6 +2,7 @@
 #include <map>
 #include <string>
 #include <utility>
+#include <locale>
 #include <boost/algorithm/string.hpp>
 #include <regex>
 

@@ -13,37 +13,16 @@ draughts::model::model * draughts::model::model::get_instance(void) {
 	return instance.get();
 }
 
-void draughts::model::model::start_game(int plr1, int plr2) {
-	//Pick the player that will go first
-	int firstPlayer, secondPlayer;
-
-	auto duration = std::chrono::system_clock::now().time_since_epoch();
-	//seed with number of milliseconds since the unix epoch began
-	long millis = std::chrono::duration_cast<std::chrono::milliseconds>(
-			duration).count();
-	std::mt19937 gen(millis);
-	//set the range for the generator - in this case between 0 and 5 inclusive
-	std::uniform_int_distribution<unsigned> dist(0, 1);
-	int rand = dist(gen);
-
-	if (rand == 0) {
-		firstPlayer = plr1;
-		secondPlayer = plr2;
-	} else {
-		firstPlayer = plr2;
-		secondPlayer = plr1;
-	}
-	gameInstance = std::make_unique<Game>(firstPlayer,
-			getPlayerName(firstPlayer), secondPlayer,
-			getPlayerName(secondPlayer));
+void draughts::model::model::start_game(int pnum1, std::string pname1, int pnum2, std::string pname2) {
+	std::unique_ptr<Game> game;
+	game->getInstance()->initGame(pnum1, pname1, pnum2, pname2);
 	std::cout << "Starting the game with the players" << std::endl;
 	std::cout << "----------------------------------------" << std::endl;
-	std::cout << std::setw(0) << "Player 1" << std::setw(10) << " ID: " << plr1
-			<< std::setw(10) << "Name: " << getPlayerName(firstPlayer)
-			<< std::setw(5) << std::endl;
-	std::cout << std::setw(0) << "Player 2" << std::setw(10) << " ID: " << plr2
-			<< std::setw(10) << "Name: " << getPlayerName(secondPlayer)
-			<< std::setw(5) << std::endl;
+	std::cout << std::setw(0) << "Player 1" << std::setw(10) << " ID: " << pnum1
+			<< std::setw(10) << "Name: " << pname1 << std::setw(5) << std::endl;
+	std::cout << std::setw(0) << "Player 2" << std::setw(10) << " ID: " << pnum2
+			<< std::setw(10) << "Name: " << pname2 << std::setw(5) << std::endl;
+			std::cout << "----------------------------------------" << std::endl;
 }
 
 void draughts::model::model::add_player(const std::string& p) {
@@ -66,20 +45,6 @@ void draughts::model::model::add_player(const std::string& p) {
 	} else {
 		std::cerr << "Player name exists" << std::endl;
 	}
-}
-
-std::string draughts::model::model::getPlayerName(int playernum) {
-	for (std::map<int, std::string>::iterator it = playerList.begin();
-			it != playerList.end(); ++it) {
-		if (playernum == it->first) {
-			return it->second;
-		}
-	}
-	return "";
-}
-
-draughts::model::Game * draughts::model::model::getGameInstance() {
-	return gameInstance.get();
 }
 
 bool draughts::model::model::player_exists(const std::string& pname) {

@@ -5,6 +5,9 @@
  */
 
 #include <string>
+#include <memory>
+#include "Board.h"
+#include "../PieceType.h"
 
 #ifndef MODEL_PLAYER_H_
 #define MODEL_PLAYER_H_
@@ -13,18 +16,23 @@ namespace draughts {
 namespace model {
 
 class Player {
-	int id;
+	int playernum;
 	std::string name;
+	PieceType pieceType;
 	int score;
-	char tokenType;
 public:
-	Player(int, std::string, char);
+	Player(int, std::string, PieceType);
 	virtual ~Player();
-	void makeMove(int, int, int, int, int);
-	std::string getPlayerName();
+
 	int getPlayerNum();
+	std::string getPlayerName();
+	PieceType getPieceType();
 	int getPlayerScore();
-	char getTokenType();
+
+	void makeMove(int, int, int, int);
+	bool possibleMoves();
+	bool possibleJumps();
+	bool moreJumps(int, int);
 };
 
 } /* namespace model */
