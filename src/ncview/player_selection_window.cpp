@@ -37,11 +37,6 @@ void draughts::ncview::player_selection_window::activate(void) {
 		menu playersmenu("Select a Player to add to the game", strings,
 				std::move(actions));
 		playersmenu.activate();
-
-		/*if (selected_list.size() == NUM_PLAYERS) {
-		 std::cout << "starting a game with the following players "
-		 << players_to_string() << std::endl;
-		 }*/
 	}
 	//Start the game with the two players selected
 	thecontroller->start_game(selected_list);

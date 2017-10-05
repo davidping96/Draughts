@@ -21,56 +21,20 @@ void draughts::ncview::game_window::activate(void) {
 
 		try {
 			display_board();
-			std::cout << gameInstance->getCurrentPlayer()->getPlayerName()
-					<< "'s turn " << std::endl;
-			char c =
-					PieceType::CROSS
-							== gameInstance->getCurrentPlayer()->getPieceType() ?
-							'x' : 'o';
-			std::cout << "Token: (" << c << ")" << std::endl;
-			std::cout << "Score: "
-					<< gameInstance->getCurrentPlayer()->getPlayerScore()
-					<< std::endl;
-		} catch (std::exception & ex) {
-			std::cerr << ex.what() << std::endl;
-		}
-		try {
-			/* If there are not more posssible moves or jumps for this player then end the game*/
-			if (!gameInstance->getCurrentPlayer()->possibleJumps()
-					&& !gameInstance->getCurrentPlayer()->possibleMoves()) {
-				//Cannot make a move or a jump, have either lost or it might be a draw
-				//Swap players to check, in either case make quit = true to break out
-				gameInstance->swapPlayers();
-				quit = true;
-				if (gameInstance->getCurrentPlayer()->possibleMoves()
-						|| gameInstance->getCurrentPlayer()->possibleJumps()) {
-					gameInstance->setWinner(
-							gameInstance->getCurrentPlayer()->getPlayerNum());
-					std::cout << "Winner: "
-							<< gameInstance->getCurrentPlayer()->getPlayerName()
-							<< std::endl;
-					break;
-				} else {
-					std::cout << "The game ends in a draw" << std::endl;
-					break;
-				}
-			}
-
+			display_current_player();
 			do {
 				//Get user input for next move
 				move_coords = get_move_input();
+
 				//Check if jumps are possible
 				if (gameInstance->getCurrentPlayer()->possibleJumps()) {
 					//If true then ensure move input is a valid jump
 					if (boardInstance->getInstance()->getCells().at(
 							move_coords.first.first).at(
-							move_coords.first.second) != nullptr
-							&& boardInstance->getInstance()->getCells().at(
-									move_coords.first.first).at(
-									move_coords.first.second)->validJump(
-									gameInstance->getCurrentPlayer()->getPieceType(),
-									move_coords.second.first,
-									move_coords.second.second)) {
+							move_coords.first.second)->validJump(
+							gameInstance->getCurrentPlayer()->getPieceType(),
+							move_coords.second.first,
+							move_coords.second.second)) {
 						//valid_input is true if it is
 						valid_jump = true;
 						//If a piece will be kinged upon jumping then do not try to make more jumps
@@ -88,13 +52,10 @@ void draughts::ncview::game_window::activate(void) {
 						//If true then ensure move input is a valid move
 						if (boardInstance->getInstance()->getCells().at(
 								move_coords.first.first).at(
-								move_coords.first.second) != nullptr
-								&& boardInstance->getInstance()->getCells().at(
-										move_coords.first.first).at(
-										move_coords.first.second)->validMove(
-										gameInstance->getCurrentPlayer()->getPieceType(),
-										move_coords.second.first,
-										move_coords.second.second)) {
+								move_coords.first.second)->validMove(
+								gameInstance->getCurrentPlayer()->getPieceType(),
+								move_coords.second.first,
+								move_coords.second.second)) {
 							//valid_input is true if it is
 							valid_move = true;
 						} else {
@@ -104,82 +65,58 @@ void draughts::ncview::game_window::activate(void) {
 					}
 				}
 			} while (!valid_move && !valid_jump);
+
 			gameInstance->getCurrentPlayer()->makeMove(move_coords.first.first,
 					move_coords.first.second, move_coords.second.first,
 					move_coords.second.second);
 
-			//If a valid jump was made
+			//If a valid jump was made and the piece moved was not kinged
 			if (valid_jump && !kinged) {
-				int startx = move_coords.second.first;
-				int starty = move_coords.second.second;
-				//Make more jumps as long as it can
-				while (gameInstance->getCurrentPlayer()->moreJumps(startx,
-						starty) && !kinged) {
-					std::cout << "Make another jump from " << startx + 1 << ","
-							<< starty + 1 << std::endl;
-					display_board();
-					std::pair<int, int> jump_coords;
-					//Get more user input
-					jump_coords = get_more_jumps();
-					//If it is valid input
-					if (boardInstance->getInstance()->getCells().at(startx).at(
-							starty) != nullptr
-							&& boardInstance->getInstance()->getCells().at(
-									startx).at(starty)->validJump(
-									gameInstance->getCurrentPlayer()->getPieceType(),
-									jump_coords.first, jump_coords.second)) {
-						//If the end is a kingsrow for the piece then king then break the loop
-						kinged = boardInstance->pieceKinged(startx, starty,
-								jump_coords.first);
-						//Make the jump
-						gameInstance->getCurrentPlayer()->makeMove(startx,
-								starty, jump_coords.first, jump_coords.second);
-
-						startx = jump_coords.first;
-						starty = jump_coords.second;
-					} else {
-						std::cout << "Invalid input, must make a valid jump"
-								<< std::endl;
-					}
-				}
+				try_more_jumps(move_coords.second.first,
+						move_coords.second.second);
 			}
 			//Swap current player
 			gameInstance->swapPlayers();
+			if (gameInstance->checkGameOver()) {
+				quit = true;
+			}
+		} catch (std::invalid_argument &e) {
+			std::cerr << e.what() << std::endl;
 		} catch (std::exception& ex) {
 			std::cerr << ex.what() << std::endl;
 		}
 	}
-	board->deleteInstance();
-	game->deleteInstance();
+	display_winner(gameInstance->getWinner());
 }
 
 std::pair<std::pair<int, int>, std::pair<int, int>> draughts::ncview::game_window::get_move_input(
 		void) {
 	std::string input;
 	std::pair<std::pair<int, int>, std::pair<int, int>> move;
+	std::vector<std::string> moves;
 	std::pair<int, int> start;
 	std::pair<int, int> end;
-	std::cout << "Please enter your next move (x1,y1 - x2,y2): " << std::endl;
+	//bool validInput = false;
 
-	/*Use regex to ensure user enters a valid input, repeat until valid*/
-	std::regex reg("^[1-8],[\\s]?[1-8][\\s]?-[\\s]?[1-8],[\\s]?[1-8]$");
-	do {
+	//do {
+	try {
+		std::cout << "Please enter your next move (x1,y1 - x2,y2): "
+				<< std::endl;
 		std::getline(std::cin, input);
-		if (!regex_match(input, reg)) {
-			std::cerr << "Invalid input, please try again: " << std::endl;
+		boost::split(moves, input, [](char ch) {return ch == '-';});
+		if(moves.size()!=2){
+			throw std::invalid_argument("Invalid input format");
 		}
-	} while (std::regex_match(input, reg) != 1);
+		start = strtocoord(moves[0]);
+		end = strtocoord(moves[1]);
+		//validInput = true;
+	} catch (std::invalid_argument &e) {
+		throw e;
+	} catch (std::exception &ex) {
+		throw ex;
+	}
+	//} while (validInput == false);
 
-	std::vector<std::string> moves;
-	std::vector<std::string> coords;
-	//Use lambda expression to split up the input
-	boost::split(moves, input, [](char ch) {return ch == '-';});
-	start = strtocoord(moves[0]);
-	--start.first;
-	--start.second;
-	end = strtocoord(moves[1]);
-	--end.first;
-	--end.second;
 	move = std::make_pair(start, end);
 	return move;
 }
@@ -187,20 +124,29 @@ std::pair<std::pair<int, int>, std::pair<int, int>> draughts::ncview::game_windo
 std::pair<int, int> draughts::ncview::game_window::get_more_jumps(void) {
 	std::string input;
 	std::pair<int, int> move;
-	std::cout << "Please enter another jump (x,y): " << std::endl;
-	std::regex reg("^[1-8],[\\s]?[1-8]$");
-	do {
-		std::getline(std::cin, input);
-		if (!regex_match(input, reg)) {
-			std::cerr << "Invalid input, please try again: " << std::endl;
-		}
-	} while (std::regex_match(input, reg) != 1);
 	int x, y;
 	std::vector<std::string> parts;
-	boost::split(parts, input, [](char ch) {return ch == ',';});
-	x = stoi(parts[0]);
+	//bool validInput = false;
+
+	//do {
+	try {
+		std::cout << "Please enter another jump (x,y): " << std::endl;
+		std::getline(std::cin, input);
+		boost::split(parts, input, [](char ch) {return ch == ',';});
+		if (parts.size() != 2) {
+			throw std::invalid_argument("Invalid coordinates format");
+		}
+		x = stoi(parts[0]);
+		y = stoi(parts[1]);
+		//validInput = true;
+	} catch (std::invalid_argument &e) {
+		throw e;
+	} catch (std::exception &ex) {
+		throw ex;
+	}
+	//} while (validInput == false);
+
 	--x;
-	y = stoi(parts[1]);
 	--y;
 	move = std::make_pair(x, y);
 	return move;
@@ -222,9 +168,21 @@ std::pair<int, int> draughts::ncview::game_window::strtocoord(
 		const std::string& input) {
 	int x, y;
 	std::vector<std::string> parts;
-	boost::split(parts, input, [](char ch) {return ch == ',';});
-	x = stoi(parts[0]);
-	y = stoi(parts[1]);
+	try {
+		boost::split(parts, input, [](char ch) {return ch == ',';});
+
+		if (parts.size() != 2) {
+			throw std::invalid_argument("Invalid coordinates");
+		}
+		x = stoi(parts[0]);
+		y = stoi(parts[1]);
+	} catch (std::invalid_argument &e) {
+		throw e;
+	} catch (std::exception &ex) {
+		throw ex;
+	}
+	--x;
+	--y;
 	return std::make_pair(x, y);
 }
 
@@ -280,3 +238,77 @@ void draughts::ncview::game_window::display_board(void) {
 	}
 }
 
+void draughts::ncview::game_window::display_current_player(void) {
+	std::unique_ptr<draughts::model::Game> game;
+
+	std::cout << game->getInstance()->getCurrentPlayer()->getPlayerName()
+			<< "'s turn " << std::endl;
+	char c =
+			PieceType::CROSS
+					== game->getInstance()->getCurrentPlayer()->getPieceType() ?
+					'x' : 'o';
+	std::cout << "Token: (" << c << ")" << std::endl;
+	std::cout << "Score: "
+			<< game->getInstance()->getCurrentPlayer()->getPlayerScore()
+			<< std::endl;
+}
+
+void draughts::ncview::game_window::display_winner(int playernum) {
+	std::unique_ptr<draughts::model::Game> game;
+	if (playernum != game->getInstance()->getCurrentPlayer()->getPlayerNum()) {
+		game->getInstance()->swapPlayers();
+	}
+	if(playernum != -1){
+	std::cout << "Winner: "
+			<< game->getInstance()->getCurrentPlayer()->getPlayerName()
+			<< std::endl;
+	std::cout << "Score: "
+			<< game->getInstance()->getCurrentPlayer()->getPlayerScore()
+			<< std::endl;
+	}else{
+		std::cout<<"Game ends in a draw"<<std::endl;
+	}
+}
+
+void draughts::ncview::game_window::try_more_jumps(int endx, int endy) {
+	std::unique_ptr<draughts::model::Board> board;
+	std::unique_ptr<draughts::model::Game> game;
+	int startx = endx;
+	int starty = endy;
+	bool kinged = false;
+
+	//While the current player can make more jumps and the piece has not been kinged jump again
+	while (game->getInstance()->getCurrentPlayer()->moreJumps(startx, starty)
+			&& !kinged) {
+		try {
+			std::cout << "Make another jump from " << startx + 1 << ","
+					<< starty + 1 << std::endl;
+			display_board();
+			std::pair<int, int> jump_coords;
+			//Get more user input
+			jump_coords = get_more_jumps();
+			//If it is valid input
+			if (board->getInstance()->getInstance()->getCells().at(startx).at(
+					starty)->validJump(
+					game->getInstance()->getCurrentPlayer()->getPieceType(),
+					jump_coords.first, jump_coords.second)) {
+				//If the end is a kingsrow for the piece then king then break the loop
+				kinged = board->getInstance()->pieceKinged(startx, starty,
+						jump_coords.first);
+				//Make the jump
+				game->getInstance()->getCurrentPlayer()->makeMove(startx,
+						starty, jump_coords.first, jump_coords.second);
+
+				startx = jump_coords.first;
+				starty = jump_coords.second;
+			} else {
+				std::cout << "Invalid input, must make a valid jump"
+						<< std::endl;
+			}
+		} catch (std::invalid_argument &e) {
+			std::cerr << e.what() << std::endl;
+		} catch (std::exception &ex) {
+			std::cerr << ex.what() << std::endl;
+		}
+	}
+}

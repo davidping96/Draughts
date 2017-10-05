@@ -80,7 +80,6 @@ bool draughts::model::Men::validJump(PieceType playerPieceType, int endx,
 			(ycoord + endy) / 2)->getPieceType() == pieceType) {
 		return false;
 	}
-
 	//If player1 and going down check direction is valid
 	if ((PieceType::CROSS == pieceType && xcoord == endx - 2)
 			&& (ycoord == endy + 2 || ycoord == endy - 2)) {
@@ -91,7 +90,6 @@ bool draughts::model::Men::validJump(PieceType playerPieceType, int endx,
 			&& (ycoord == endy + 2 || ycoord == endy - 2)) {
 		return true;
 	}
-
 	return false;
 }
 

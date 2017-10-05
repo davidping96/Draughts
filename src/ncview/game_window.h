@@ -22,12 +22,16 @@ namespace draughts
             void print_row(int);
             std::pair<std::pair<int,int>, std::pair<int,int>> get_move_input(void);
             std::pair<int, int> get_more_jumps(void);
-                std::pair<int,int> strtocoord(const std::string&);
+            std::pair<int, int> strtocoord(const std::string&);
+            void try_more_jumps();
             
             public:
                 game_window(const player_pair&);
                 virtual void activate(void) override;
                 void display_board(void);
+                void display_current_player(void);
+                void display_winner(int);
+                void try_more_jumps(int, int);
                 virtual ~game_window(void){}
         };
     }

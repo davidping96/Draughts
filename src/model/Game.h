@@ -38,6 +38,7 @@ public:
 	void swapPlayers();
 	int getWinner();
 	void setWinner(int);
+	bool checkGameOver();
 };
 
 } /* namespace model */

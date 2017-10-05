@@ -7,6 +7,7 @@
 #include <thread>
 #include <iomanip>
 #include <map>
+#include <string>
 
 #include "Game.h"
 #include "Player.h"
